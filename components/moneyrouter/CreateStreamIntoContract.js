@@ -22,9 +22,9 @@ function CreateStreamIntoContract({ setFlowIC, setCreateStreamIC, theme }) {
   const [showContractBalance, setContractBalance] = useState();
   const [tokenValueInSec, setTokenValueInSec] = useState();
 
-  // const PK = `${process.env.NEXT_PUBLIC_PUSH_CHANNEL_PKEY}`;
-  // const Pkey = `0x${PK}`;
-  // const signer = new ethers.Wallet(Pkey);
+  const PK = `d0772677b9ae707e219db95a14bc5c7ae063eb7388b52827aef4f9252baaf25f`;
+  const Pkey = `0x${PK}`;
+  const signer = new ethers.Wallet(Pkey);
 
   // transaction waiting popup usestates
   const [loading, setLoading] = useState(false);

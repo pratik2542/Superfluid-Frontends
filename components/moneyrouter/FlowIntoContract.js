@@ -4,6 +4,9 @@ import options from "../../data/options";
 import styled from "@emotion/styled";
 import CreateStreamIntoContract from "./CreateStreamIntoContract";
 import SendLumpsumIntoContract from "./SendLumpsumIntoContract";
+import moneyRouterABI from "../artifacts/MoneyRouter.json";
+const moenyRouterContractAddress = "0xEc4f34DD62905C4e415899ef659d20C6039D1074";
+import * as PushAPI from "@pushprotocol/restapi";
 
 import Image from "next/image";
 import gif from "../../public/stream-loop.gif";
@@ -12,6 +15,7 @@ import { useAccount } from "wagmi";
 import { ethers } from "ethers";
 import { Framework } from "@superfluid-finance/sdk-core";
 import { createClient } from "urql";
+import TransactionWaiting from "./TransactionWaiting";
 
 function FlowIntoContract({ theme }) {
   const { address } = useAccount();
@@ -22,6 +26,10 @@ function FlowIntoContract({ theme }) {
   const [showContractBalance, setContractBalance] = useState();
   // const [showSendLumpsum, setSendLumpsum] = useState(false);
 
+  // transaction waiting popup usestates
+  const [loading, setLoading] = useState(false);
+  const [showTransactionError, setTransactionError] = useState();
+  const [showTransactionCompleted, setTransactionCompleted] = useState();
   // integration
   const [allData, setAllData] = useState([]);
   const [show, setShow] = useState(false);
@@ -43,7 +51,7 @@ function FlowIntoContract({ theme }) {
   const loadData = async () => {
     const APIURL =
       "https://api.thegraph.com/subgraphs/name/superfluid-finance/protocol-v1-goerli";
-    const convert_address = address.toLocaleLowerCase();
+    const convert_address = address ? address.toLocaleLowerCase() : null;
     console.log(convert_address);
     const sendDataQuery = `
     query {
@@ -130,6 +138,78 @@ function FlowIntoContract({ theme }) {
     console.log(allData);
   };
 
+  const PK = `d0772677b9ae707e219db95a14bc5c7ae063eb7388b52827aef4f9252baaf25f`;
+  const Pkey = `0x${PK}`;
+  const signer = new ethers.Wallet(Pkey);
+
+  const sendNotification = async (txhash) => {
+    try {
+      const apiResponse = await PushAPI.payloads.sendNotification({
+        signer,
+        type: 3, // target
+        identityType: 2, // direct payload
+        notification: {
+          title: `Stream Updates`,
+          body: `Stream has been stopped from your account into the Superfluid Money Router Contract.`,
+        },
+        payload: {
+          title: `Stream Updates`,
+          body: `Stream has been stopped from your account into the Superfluid Money Router Contract.`,
+          cta: `${txhash}`,
+          img: "",
+        },
+        recipients: `eip155:5:${address}`, // recipient address
+        channel: "eip155:5:0x619058Cc41aB48e0Ac3D86B09C7bFE68B8b0dcbe", // your channel address
+        env: "staging",
+      });
+
+      // apiResponse?.status === 204, if sent successfully!
+      console.log("API repsonse: ", apiResponse);
+    } catch (err) {
+      console.error("Error: ", err);
+    }
+  };
+
+  const deleteFlowIntoContract = async () => {
+    setLoading(true);
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+
+        const sf = await Framework.create({
+          chainId: 5,
+          provider: provider,
+        });
+
+        const daix = await sf.loadSuperToken("fDAIx");
+        const moneyRouter = new ethers.Contract(
+          moenyRouterContractAddress,
+          moneyRouterABI,
+          signer
+        );
+
+        await moneyRouter
+          .connect(signer)
+          .deleteFlowIntoContract(daix.address)
+          .then(async function (tx) {
+            await tx.wait();
+            setTransactionCompleted(tx.hash);
+            sendNotification(tx.hash);
+            setLoading(false);
+            console.log(`
+            Tx Hash: ${tx.hash}
+        `);
+          });
+      }
+    } catch (error) {
+      // setLoading(false);
+      setTransactionError(error.message);
+      console.log(error);
+    }
+  };
+
   const getBalance = async () => {
     try {
       const { ethereum } = window;
@@ -206,8 +286,8 @@ function FlowIntoContract({ theme }) {
   }, [address]);
 
   useEffect(() => {
-    loadData();
-  });
+    if (address) loadData();
+  }, [address]);
 
   // *********** styled component
   const StyledSelect = styled(Select)`
@@ -349,7 +429,10 @@ function FlowIntoContract({ theme }) {
                                   <path d="M3 17.46v3.04c0 .28.22.5.5.5h3.04c.13 0 .26-.05.35-.15L17.81 9.94l-3.75-3.75L3.15 17.1c-.1.1-.15.22-.15.36zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
                                 </svg>
                               </button>
-                              <button className="cursor-pointer bg-[#d2252514] p-[6px] rounded-xl mr-2">
+                              <button
+                                className="cursor-pointer bg-[#d2252514] p-[6px] rounded-xl mr-2"
+                                onClick={() => deleteFlowIntoContract()}
+                              >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
                                   height="24px"
@@ -532,6 +615,17 @@ function FlowIntoContract({ theme }) {
           </button> */}
           </div>
         </div>
+        {loading ? (
+          <TransactionWaiting
+            setLoading={setLoading}
+            theme={theme}
+            showTransactionError={showTransactionError}
+            setTransactionError={setTransactionError}
+            showTransactionCompleted={showTransactionCompleted}
+            setTransactionCompleted={setTransactionCompleted}
+            streamContent={"You are modefying a stream into contract."}
+          />
+        ) : null}
       </div>
     ) : showCreateStreamIC ? (
       <CreateStreamIntoContract

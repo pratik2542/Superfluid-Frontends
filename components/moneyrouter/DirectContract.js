@@ -43,7 +43,7 @@ function DirectContract({ theme }) {
   const loadData = async () => {
     const APIURL =
       "https://api.thegraph.com/subgraphs/name/superfluid-finance/protocol-v1-goerli";
-    const convert_address = address.toLocaleLowerCase();
+    const convert_address = address ? address.toLocaleLowerCase() : null;
     console.log(convert_address);
     const sendDataQuery = `
     query {
@@ -154,8 +154,8 @@ function DirectContract({ theme }) {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (address) loadData();
+  }, [address]);
 
   const getBalance = async () => {
     try {
