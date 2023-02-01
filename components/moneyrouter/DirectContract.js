@@ -111,14 +111,17 @@ function DirectContract({ theme }) {
           String(monthNames[d.getMonth()]) +
           ". " +
           String(d.getFullYear());
-        if (allData.length < s_data.length)
-          allData.push([
-            "0xec4f34dd62905c4e415899ef659d20c6039d1074",
-            s_data[i].value,
-            s_data[i].timestamp,
-            date,
-            true,
-          ]);
+        if (allData.length < s_data.length) {
+          if (!allData.find((item) => s_data[i].timestamp === item[2])) {
+            allData.push([
+              "0xec4f34dd62905c4e415899ef659d20c6039d1074",
+              s_data[i].value,
+              s_data[i].timestamp,
+              date,
+              true,
+            ]);
+          }
+        }
       } else {
         if (s_data[i].to.id === convert_address) {
           console.log("hi");
@@ -129,14 +132,17 @@ function DirectContract({ theme }) {
             String(monthNames[d.getMonth()]) +
             ". " +
             String(d.getFullYear());
-          if (allData.length < s_data.length)
-            allData.push([
-              "0xec4f34dd62905c4e415899ef659d20c6039d1074",
-              s_data[i].value,
-              s_data[i].timestamp,
-              date,
-              false,
-            ]);
+          if (allData.length < s_data.length) {
+            if (!allData.find((item) => s_data[i].timestamp === item[2])) {
+              allData.push([
+                "0xec4f34dd62905c4e415899ef659d20c6039d1074",
+                s_data[i].value,
+                s_data[i].timestamp,
+                date,
+                false,
+              ]);
+            }
+          }
         } else {
           console.log("no");
         }

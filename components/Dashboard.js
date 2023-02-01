@@ -57,10 +57,12 @@ function Dashboard({
     const APIURL =
       "https://api.thegraph.com/subgraphs/name/superfluid-finance/protocol-v1-goerli";
 
+    const convert_address = address.toLocaleLowerCase();
+
     const tokensQuery_outgoing = `
     query {
     flowUpdatedEvents(
-      where: {sender: "0xf96b82579B8f4E0357908AE50a10f2287A19Baa9"}
+      where: {sender: "${convert_address}"}
       orderBy: timestamp
     ) {
       timestamp

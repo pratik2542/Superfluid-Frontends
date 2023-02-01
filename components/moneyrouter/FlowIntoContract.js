@@ -88,25 +88,41 @@ function FlowIntoContract({ theme }) {
         ". " +
         String(d1.getFullYear());
       if (s_data[i].stream.currentFlowRate === "0") {
-        if (allData.length < s_data.length)
-          allData.push([
-            s_data[i].receiver,
-            ethers.utils.formatEther(s_data[i].stream.streamedUntilUpdatedAt),
-            false,
-            ethers.utils.formatEther(s_data[i].stream.currentFlowRate),
-            start_date,
-            end_date,
-          ]);
+        if (allData.length < s_data.length) {
+          if (
+            !allData.find(
+              (item) => s_data[i].stream.createdAtTimestamp === item[6]
+            )
+          ) {
+            allData.push([
+              s_data[i].receiver,
+              ethers.utils.formatEther(s_data[i].stream.streamedUntilUpdatedAt),
+              false,
+              ethers.utils.formatEther(s_data[i].stream.currentFlowRate),
+              start_date,
+              end_date,
+              s_data[i].stream.createdAtTimestamp,
+            ]);
+          }
+        }
       } else {
-        if (allData.length < s_data.length)
-          allData.push([
-            s_data[i].receiver,
-            ethers.utils.formatEther(s_data[i].stream.streamedUntilUpdatedAt),
-            true,
-            ethers.utils.formatEther(s_data[i].stream.currentFlowRate),
-            start_date,
-            end_date,
-          ]);
+        if (allData.length < s_data.length) {
+          if (
+            !allData.find(
+              (item) => s_data[i].stream.createdAtTimestamp === item[6]
+            )
+          ) {
+            allData.push([
+              s_data[i].receiver,
+              ethers.utils.formatEther(s_data[i].stream.streamedUntilUpdatedAt),
+              true,
+              ethers.utils.formatEther(s_data[i].stream.currentFlowRate),
+              start_date,
+              end_date,
+              s_data[i].stream.createdAtTimestamp,
+            ]);
+          }
+        }
       }
     }
     setAllData(allData);

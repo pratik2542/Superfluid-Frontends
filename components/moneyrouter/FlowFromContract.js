@@ -84,23 +84,37 @@ function FlowFromContract({ theme }) {
         ". " +
         String(d1.getFullYear());
       if (s_data[i].stream.currentFlowRate === "0") {
-        allData.push([
-          s_data[i].sender,
-          ethers.utils.formatEther(s_data[i].stream.streamedUntilUpdatedAt),
-          false,
-          ethers.utils.formatEther(s_data[i].stream.currentFlowRate),
-          start_date,
-          end_date,
-        ]);
+        if (
+          !allData.find(
+            (item) => s_data[i].stream.createdAtTimestamp === item[6]
+          )
+        ) {
+          allData.push([
+            s_data[i].sender,
+            ethers.utils.formatEther(s_data[i].stream.streamedUntilUpdatedAt),
+            false,
+            ethers.utils.formatEther(s_data[i].stream.currentFlowRate),
+            start_date,
+            end_date,
+            s_data[i].stream.createdAtTimestamp,
+          ]);
+        }
       } else {
-        allData.push([
-          s_data[i].sender,
-          ethers.utils.formatEther(s_data[i].stream.streamedUntilUpdatedAt),
-          true,
-          ethers.utils.formatEther(s_data[i].stream.currentFlowRate),
-          start_date,
-          end_date,
-        ]);
+        if (
+          !allData.find(
+            (item) => s_data[i].stream.createdAtTimestamp === item[6]
+          )
+        ) {
+          allData.push([
+            s_data[i].sender,
+            ethers.utils.formatEther(s_data[i].stream.streamedUntilUpdatedAt),
+            true,
+            ethers.utils.formatEther(s_data[i].stream.currentFlowRate),
+            start_date,
+            end_date,
+            s_data[i].stream.createdAtTimestamp,
+          ]);
+        }
       }
     }
     setAllData(allData);
